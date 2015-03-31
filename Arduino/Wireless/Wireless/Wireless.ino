@@ -49,13 +49,16 @@ Serial.println("Open Write");
 // the loop function runs over and over again forever
 void loop() {
   
-data[0] = analogRead(pressureSensor);
+//data[0] = analogRead(pressureSensor);
+data[0]++;
 Serial.print("Pressure: ");
 Serial.println(data[0]);
   
-data[1] = analogRead(lightSensor);
+//data[1] = analogRead(lightSensor);
+data[1] = 200;
 Serial.print("Light: ");
 Serial.println(data[1]);
+
 
 Serial.print("Sending Message: ");
   radio.write(data, sizeof(data));
