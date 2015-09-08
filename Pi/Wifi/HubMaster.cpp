@@ -7,21 +7,34 @@
 #include <RF24/RF24.h>
 #include <sys/resource.h> 
 
+void flushFileHandles();
+void initializeLogging();
+void initializeRadio();
+void checkForCarrier();
 void readDeviceData();
+void sendDeviceData();
+void timeStamp(FILE *file);
 void callWebAPI(char *urlRaw,char *authHeader);
 void createAuthHeader (char *key,char *keyName,char *url,char *authHeader);
 char * base64encode (const void *b64_encode_me, int encode_this_many_bytes,int *resLen);
 int createAndPostData(char *authHeader);
-void timeStamp(FILE *file);
-void flushFileHandles();
+
+// Customize these string to match your environment.
+char *url = (char*)"https://homeautomation-eventhub.servicebus.windows.net/homeautomation/messages?api-version=2014-01";
+char *log = (char*)"/home/pi/RFHub/HubMasterLog.txt";
+char *errorLog = (char*)"/home/pi/RFHub/HubMasterStderr.txt";
+char *stdoutLog = (char*)"/home/pi/RFHub/HubMasterStdout.txt";
+char *baseUrl = (char *)"homeautomation-eventhub.servicebus.windows.net";
+char *key = (char*)"enKkhLiDsH0slGC4aSL+VPnxD6+YxlrA/Y7QFtJbD0w=";
+char *policyName = (char*)"Sensors";
 
 // Setup for GPIO 15 CE and CE0 CSN with SPI Speed @ 8Mhz
 RF24 radio(RPI_V2_GPIO_P1_15, RPI_V2_GPIO_P1_24, BCM2835_SPI_SPEED_8MHZ);
 
 // First pipe is for writing, 2nd, 3rd, 4th, 5th & 6th is for reading...
-const uint64_t pipes[6] = { 0xF0F0F0F0D2LL, 0xF0F0F0F0E1LL, 
-                            0xF0F0F0F0E2LL, 0xF0F0F0F0E3LL, 
-                            0xF0F0F0F0F1,   0xF0F0F0F0F2 };
+const uint64_t pipes[6] = { 0xF0F0F0F0D2LL, 0xF0F0F0F0E1LL,
+0xF0F0F0F0E2LL, 0xF0F0F0F0E3LL,
+0xF0F0F0F0F1, 0xF0F0F0F0F2 };
 
 // Payload size - 32 is the default.  Must be the same on transmitter
 const uint8_t MAX_PAYLOAD_SIZE = 32;  
@@ -31,8 +44,6 @@ int lastPayloadLen;
 uint8_t bytesRecv[MAX_PAYLOAD_SIZE+1];
 char postData[MAX_POSTDATA_SIZE];
 
-char *url=(char*)"https://homeautomation-ns.servicebus.windows.net/homeautomation/messages?api-version=2014-01";
-
 FILE *logFile;
 time_t rawtime;
 struct tm * timeinfo;
@@ -40,36 +51,15 @@ struct rusage memInfo;
 
 int main()
 {
-    //open file for logging
-    logFile = fopen("/home/pi/code/rfHub/HubMasterLog.txt", "w");
-    freopen ("/home/pi/code/rfHub/HubMasterStderr.txt","w",stderr);
-    freopen ("/home/pi/code/rfHub/HubMasterStdout.txt","w",stdout);
+	initializeLogging();
+	initializeRadio();
 
-    //tag log files
-    time(&rawtime);
-    fprintf(logFile,"-\n-\n-\nHubMaster Start - %s-\n\n",ctime(&rawtime));
-    fprintf(stderr,"-\n-\n-\nHubMaster Start - %s\n-\n",ctime(&rawtime));
-    fprintf(stdout,"-\n-\n-\nHubMaster Start - %s\n-\n",ctime(&rawtime));
+	/*Testing Area - Uncomment to send fake data
 
-    //setup radio
-    radio.begin();
-    radio.setAutoAck(1);                    // Ensure autoACK is enabled
-    radio.enableAckPayload();               // Allow optional ack payloads
-    radio.setRetries(15,15);                // Smallest time between retries, max no. of retries
-    //radio.setPayloadSize(5);                // Here we are sending 1-byte payloads to test the call-response speed
-    radio.printDetails();                   // Dump the configuration of the rf unit for debugging
-    radio.enableDynamicPayloads();          // Read size off chip
+	sendDeviceData();
+	return 0;
 
-    // Open 6 pipes for readings ( 5 plus pipe0, also can be used for reading )
-    radio.openWritingPipe(pipes[0]);
-    radio.openReadingPipe(1,pipes[1]); //Power reading pipe
-    radio.openReadingPipe(2,pipes[2]); //Motion sensor pipe
-    radio.openReadingPipe(3,pipes[3]); //Temperature sensors pipe
-    radio.openReadingPipe(4,pipes[4]);
-    radio.openReadingPipe(5,pipes[5]);
-
-    //Start listening!
-    radio.startListening();
+	*/
 
     //Loop, checking for radio packets
     while(1)
@@ -81,30 +71,76 @@ int main()
 
         //read data from the pipe
         readDeviceData();
+		sendDeviceData();
 
-        //Create new SAS authorization header
-        char *baseUrl=(char *)"homeautomation-ns.servicebus.windows.net";
-        char *authHeader=(char*)malloc(256);
-        createAuthHeader((char*)"3RdEfuPG4TeMbsBRhLgaCnyoq5ZttZpJWFdxajN0rZM=",(char*)"saspolicy",baseUrl,authHeader);
-
-        //Send to Azure
-        createAndPostData(authHeader);
-
-        //Free memory
-        free(authHeader);
         flushFileHandles();
       }
 
-      //check for carrier
-      delay(150);
-      if (radio.testCarrier())
-      {
-        fprintf(logFile,"^");
-        flushFileHandles();
-      }
-      delay(350);
+	  checkForCarrier();
     }
     return 0;
+}
+
+void initializeLogging()
+{
+	//open file for logging
+	logFile = fopen(log, "w");
+	freopen(errorLog, "w", stderr);
+	freopen(stdoutLog, "w", stdout);
+
+	//tag log files
+	time(&rawtime);
+	fprintf(logFile, "-\n-\n-\nHubMaster Start - %s\n-\n", ctime(&rawtime));
+	fprintf(stderr, "-\n-\n-\nHubMaster Start - %s\n-\n", ctime(&rawtime));
+	fprintf(stdout, "-\n-\n-\nHubMaster Start - %s\n-\n", ctime(&rawtime));
+}
+
+void initializeRadio()
+{
+	//setup radio
+	radio.begin();
+	radio.setAutoAck(1);                    // Ensure autoACK is enabled
+	radio.enableAckPayload();               // Allow optional ack payloads
+	radio.setRetries(15, 15);                // Smallest time between retries, max no. of retries
+	//radio.setPayloadSize(5);                // Here we are sending 1-byte payloads to test the call-response speed
+	radio.printDetails();                   // Dump the configuration of the rf unit for debugging
+	radio.enableDynamicPayloads();          // Read size off chip
+
+	// Open 6 pipes for readings ( 5 plus pipe0, also can be used for reading )
+	radio.openWritingPipe(pipes[0]);
+	radio.openReadingPipe(1, pipes[1]); //Power reading pipe
+	radio.openReadingPipe(2, pipes[2]); //Motion sensor pipe
+	radio.openReadingPipe(3, pipes[3]); //Temperature sensors pipe
+	radio.openReadingPipe(4, pipes[4]);
+	radio.openReadingPipe(5, pipes[5]);
+
+	//Start listening!
+	radio.startListening();
+}
+
+void sendDeviceData()
+{
+	//Create new SAS authorization header
+	char *authHeader = (char*)malloc(256);
+	createAuthHeader(key, policyName, baseUrl, authHeader);
+
+	//Send to Azure
+	createAndPostData(authHeader);
+
+	//Free memory
+	free(authHeader);
+}
+
+void checkForCarrier()
+{
+	//check for carrier
+	delay(150);
+	if (radio.testCarrier())
+	{
+		fprintf(logFile, "^");
+		flushFileHandles();
+	}
+	delay(350);
 }
 
 void timeStamp(FILE *file)
@@ -145,20 +181,33 @@ int createAndPostData(char *authHeader)
     for(int i=0;i<MAX_POSTDATA_SIZE;i++)
       postData[i]=0;
 
+	/* Testing Area - Uncomment to send fake data
+	
+	sprintf(postData, "{'DeviceName':'Power%d','DeviceDate':'%ld','DeviceData1':'%f'}", 1, seconds_past_epoch, 20.10);
+	callWebAPI(url, authHeader);
+	fprintf(logFile, ".");  //Small indication for log file
+	fflush(logFile);
+
+	return 0;
+
+	*/
+
     //Power
     if(pipeNo==1)
     {
        uint8_t addr;
        float reading;
 
-	addr=bytesRecv[0];
+	   addr=bytesRecv[0];
        memcpy(&reading,&bytesRecv[1],4);
-       //fprintf(logFile,"Addr: %d  Reading: %f\n",addr,reading);
+       fprintf(logFile,"Addr: %d  Reading: %f\n",addr,reading);
        sprintf(postData,"{'DeviceName':'Power%d','DeviceDate':'%ld','DeviceData1':'%f'}",addr,seconds_past_epoch,reading);
-
+	   callWebAPI(url, authHeader);
        fprintf(logFile,".");  //Small indication for log file
        fflush(logFile);
     }
+
+	   return 0;
 
     //Motion
     if(pipeNo==2)
@@ -298,10 +347,6 @@ void createAuthHeader (char *key,char *keyName,char *url,char *authHeader)
     time_t seconds_past_epoch = time(0);
     //fprintf(logFile,"Time: %ld\n",seconds_past_epoch);
     long expiry = seconds_past_epoch + 7200;
-   
-    // The key to hash with
-    //char *key = (char *)"3RdEfuPG4TeMbsBRhLgaCnyoq5ZttZpJWFdxajN0rZM=";
-    //fprintf(logFile,"Key: %s Len: %d\n",key,strlen(key));
 
     // The data that we're going to hash using HMAC
     //const char *url = "homeautomation-ns.servicebus.windows.net";
@@ -327,6 +372,7 @@ void createAuthHeader (char *key,char *keyName,char *url,char *authHeader)
 
     //create auth header 
     sprintf(authHeader,"Authorization: SharedAccessSignature sr=%s&sig=%s&se=%ld&skn=%s",url,escDigest,expiry,keyName);
+	//fprintf(logFile, "auth header: %s\n", authHeader);
 
     //free memory
     curl_easy_cleanup(curl);

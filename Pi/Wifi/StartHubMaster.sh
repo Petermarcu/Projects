@@ -18,7 +18,7 @@ case "$1" in
   start)
     echo "Starting HubMaster"
     # run application you want to start
-    /home/pi/code/rfHub/HubMaster&
+    /home/pi/RFHub/HubMaster&
     ;;
   stop)
     echo "Stopping HubMaster"

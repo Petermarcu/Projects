@@ -1,3 +1,3 @@
-/home/pi/code/rfHub/stopHub.sh
+/home/pi/RFHub/stopHub.sh
 sleep 2
-/home/pi/code/rfHub/startHub.sh
+/home/pi/RFHub/startHub.sh
