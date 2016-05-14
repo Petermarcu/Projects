@@ -1,3 +1,6 @@
+@using Chores.ViewModels
+@model HomeViewModel
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -76,7 +79,16 @@
 
     <div class="starter-template">
       <p class="lead">
-        <h1>@("Welcome to the chores site.")</h1></p>
+        <h1>@("Welcome to the chores site.")</h1>
+        
+        @foreach (var chore in Model.ChoreList) 
+        {
+           @chore.Name<br>
+        }
+        </p>
+        
+
+
     </div>
 
   </div>
