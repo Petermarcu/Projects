@@ -14,9 +14,10 @@ namespace Chores
 {
     public class Startup
     {
-        public Startup()
+        public Startup(IHostingEnvironment env)
         {
             Configuration = new ConfigurationBuilder()
+                .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables()
                 .AddJsonFile("config.json")
                 .Build();
@@ -65,26 +66,6 @@ namespace Chores
                 AutomaticChallenge = true,
                 LoginPath = new PathString("/login")
             });
-
-            /* Azure AD app model v2 has restrictions that prevent the use of plain HTTP for redirect URLs.
-               Therefore, to authenticate through microsoft accounts, tryout the sample using the following URL:
-               https://localhost:44318/
-            */
-            // See config.json
-            // https://apps.dev.microsoft.com/
-/*            app.UseOAuthAuthentication(new OAuthOptions
-            {
-                AuthenticationScheme = "Microsoft-AccessToken",
-                DisplayName = "MicrosoftAccount-AccessToken",
-                ClientId = Configuration["msa:clientid"],
-                ClientSecret = Configuration["msa:clientsecret"],
-                CallbackPath = new PathString("/signin-microsoft-token"),
-                AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint,
-                TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint,
-                Scope = { "https://graph.microsoft.com/user.read" },
-                SaveTokens = true
-            });
-*/
 
             // See config.json
             // https://azure.microsoft.com/en-us/documentation/articles/active-directory-v2-app-registration/

@@ -1,9 +1,6 @@
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.FileProviders;
-using System.Reflection;
 
 namespace Chores
 {
