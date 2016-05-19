@@ -5,17 +5,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authentication.MicrosoftAccount;
 using Microsoft.AspNetCore.Http.Authentication;
 using System.Linq;
-using System.IO;
-using Microsoft.Extensions.FileProviders;
-using System.Reflection;
 using System;
 
-namespace HelloMvc
+namespace Chores
 {
     public class Startup
     {
@@ -24,7 +19,6 @@ namespace HelloMvc
             Configuration = new ConfigurationBuilder()
                 .AddEnvironmentVariables()
                 .AddJsonFile("config.json")
-                .AddUserSecrets()
                 .Build();
         }
         
@@ -186,24 +180,6 @@ namespace HelloMvc
                 await context.Response.WriteAsync("<a href=\"/logout\">Logout</a>");
                 await context.Response.WriteAsync("</body></html>");
             });
-        }
-
-        private static X509Certificate2 LoadCertificate()
-        {
-            var socialSampleAssembly = typeof(Startup).GetTypeInfo().Assembly;
-            var embeddedFileProvider = new EmbeddedFileProvider(socialSampleAssembly, "SocialSample");
-            var certificateFileInfo = embeddedFileProvider.GetFileInfo("compiler/resources/cert.pfx");
-            using (var certificateStream = certificateFileInfo.CreateReadStream())
-            {
-                byte[] certificatePayload;
-                using (var memoryStream = new MemoryStream())
-                {
-                    certificateStream.CopyTo(memoryStream);
-                    certificatePayload = memoryStream.ToArray();
-                }
-
-                return new X509Certificate2(certificatePayload, "testPassword");
-            }
         }
         public IConfiguration Configuration { get; set; }
     }

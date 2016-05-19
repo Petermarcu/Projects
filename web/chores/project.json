@@ -1,15 +1,15 @@
 {
   "buildOptions": {
     "preserveCompilationContext": true,
-    "emitEntryPoint": true,
-    "debugType": "portable"
+    "emitEntryPoint": true
   },
   "publishOptions": {
     "include": [
       "wwwroot",
       "Views",
       "config.json",
-      "project.json"
+      "project.json",
+      "cert.pfx"
     ]
   },
   "dependencies": {
@@ -38,22 +38,5 @@
       ]
     }
   },
-  "iisSettings": { 
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
-    "iisExpress": { 
-      "applicationUrl": "http://localhost:11583/", 
-      "sslPort": 44347 
-    } 
-  }, 
-  "userSecretsId": "chores-secret-20160514111056",
-  "tools": {
-    "Microsoft.AspNetCore.Server.IISIntegration.Tools": {
-      "version": "1.0.0-*",
-      "imports": "portable-net45+wp80+win8+wpa81+dnxcore50"
-    }
-  },
-  "scripts": {
-    "postpublish": "dotnet publish-iis --publish-folder %publish:OutputPath% --framework %publish:FullTargetFramework%"
-  }
+  "userSecretsId": "chores-secret-20160514111056"
 }
