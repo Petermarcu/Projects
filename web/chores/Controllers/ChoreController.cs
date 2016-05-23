@@ -13,6 +13,26 @@ namespace Chores
         public ChoresController(ChoreContext context)
         {
             _context = context;
+            
+            /*
+            _context.Add(new Chore
+            { 
+                Id = 234,
+                Name = "Clean room"
+            });
+            _context.Add(new Chore
+            {
+                Id = 2345,
+                Name = "Wash car"
+            });
+            _context.Add(new Chore
+            {                
+                Id = 22456,
+                Name = "Take out garbage"
+            });
+            
+            _context.SaveChanges();
+            */
         }
 
         [HttpGet]

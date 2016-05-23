@@ -3,7 +3,7 @@
   "msa:clientsecret": "pjqtt3RXrFwcfSJyQ0BeUez",
   
   "ConnectionStrings" : { 
-        "Attendees": "Data Source=chores.db"  
+        "Chores": "Data Source=chores.db"  
   } 
 
 }
