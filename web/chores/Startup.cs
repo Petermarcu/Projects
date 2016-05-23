@@ -19,7 +19,7 @@ namespace Chores
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
                 .AddEnvironmentVariables()
-                .AddJsonFile("config.json")
+                .AddJsonFile("config.json", optional: false, reloadOnChange: true)
                 .Build();
         }
         

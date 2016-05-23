@@ -12,9 +12,21 @@ namespace Chores.Controllers
         { 
             var chores = new List<Chore>();
             
-            chores.Add(new Chore("Clean room"));
-            chores.Add(new Chore("Wash car"));
-            chores.Add(new Chore("Take out garbage"));
+            chores.Add(new Chore
+            { 
+                Id = 0,
+                Name = "Clean room"
+            });
+            chores.Add(new Chore
+            {
+                Id = 1,
+                Name = "Wash car"
+            });
+            chores.Add(new Chore
+            {                
+                Id = 2,
+                Name = "Take out garbage"
+            });
             
             return View(new HomeViewModel
             {
