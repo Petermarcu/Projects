@@ -60,12 +60,27 @@
 
     <div class="starter-template">
       <p class="lead">
-        <h1>Welcome to the Family Chores site!</h1>
+        <h1>My Chores</h1>
+        <ul class="list-group">
+          @foreach (var chore in Model.MyChoreList) 
+          {
+            <li class="list-group-item">
+              <span class="badge">@chore.Value</span>
+              @chore.Name
+            </li>
+          }  
+        </ul>
+        <h1>Available Chores</h1>
+        <ul class="list-group">
+          @foreach (var chore in Model.AvailableChoreList) 
+          {
+            <li class="list-group-item">
+              <span class="badge">@chore.Value</span>
+              @chore.Name
+            </li>
+          }  
+        </ul>
         
-        @foreach (var chore in Model.ChoreList) 
-        {
-           @chore.Name<br>
-        }
         
         </p>
     </div>

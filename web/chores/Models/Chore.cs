@@ -8,5 +8,10 @@ namespace Chores.Models
         
         [Required]
         public string Name { get; set; }
+
+        public string Assignee {get; set; }
+
+        public int Value {get; set;}
+        
     }
 }
