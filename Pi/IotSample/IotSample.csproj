@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bifrost.Devices.Gpio" Version="0.0.2" />
+    <PackageReference Include="Bifrost.Devices.Gpio.Abstractions" Version="0.0.1" />
+    <PackageReference Include="Bifrost.Devices.Gpio.Core" Version="0.0.1" />
+  </ItemGroup>
+
+</Project>
