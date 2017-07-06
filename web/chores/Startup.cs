@@ -32,7 +32,6 @@ namespace Chores
                 options.UseSqlite(Configuration.GetConnectionString("Chores"));
             });
             services.AddMvc();
-            services.AddAuthentication(options => options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme);
         }
 
 
@@ -68,23 +67,6 @@ namespace Chores
                 }
             });
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                LoginPath = new PathString("/login")
-            });
-
-            // See config.json
-            // https://azure.microsoft.com/en-us/documentation/articles/active-directory-v2-app-registration/
-            app.UseMicrosoftAccountAuthentication(new MicrosoftAccountOptions
-            {
-                DisplayName = "MicrosoftAccount",
-                ClientId = Configuration["msa:clientid"],
-                ClientSecret = Configuration["msa:clientsecret"],
-                SaveTokens = true
-            });
-
             // Choose an authentication type
             app.Map("/login", signoutApp =>
             {
@@ -95,7 +77,6 @@ namespace Chores
                     {
                         // By default the client will be redirect back to the URL that issued the challenge (/login?authtype=foo),
                         // send them to the home page instead (/).
-                        await context.Authentication.ChallengeAsync(authType, new AuthenticationProperties() { RedirectUri = "/" });
                         return;
                     }
 
@@ -161,11 +142,6 @@ namespace Chores
                 }
 
                 await context.Response.WriteAsync("Tokens:<br>");
-                
-                await context.Response.WriteAsync("Access Token: " + await context.Authentication.GetTokenAsync("access_token") + "<br>");
-                await context.Response.WriteAsync("Refresh Token: " + await context.Authentication.GetTokenAsync("refresh_token") + "<br>");
-                await context.Response.WriteAsync("Token Type: " + await context.Authentication.GetTokenAsync("token_type") + "<br>");
-                await context.Response.WriteAsync("expires_at: " + await context.Authentication.GetTokenAsync("expires_at") + "<br>");
                 await context.Response.WriteAsync("<a href=\"/logout\">Logout</a>");
                 await context.Response.WriteAsync("</body></html>");
             });
