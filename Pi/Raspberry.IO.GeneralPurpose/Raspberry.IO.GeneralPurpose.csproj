@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Raspberry.IO.Interop\Raspberry.IO.Interop.csproj" />
+    <ProjectReference Include="..\Raspberry.IO\Raspberry.IO.csproj" />
+    <ProjectReference Include="..\Raspberry.System\Raspberry.System.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.0-preview2-25405-01" />
+  </ItemGroup>
+
+</Project>
